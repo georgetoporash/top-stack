@@ -1,0 +1,5 @@
+terraform/openstack/.terraform*
+terraform/openstack/terraform*
+vars.tf
+openrc.sh
+clouds.yaml
