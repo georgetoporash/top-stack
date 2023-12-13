@@ -18,4 +18,6 @@ module "instance_module" {
   key_pair = var.key_pair
   security_groups = var.security_groups
   network_name = var.network_name
+  float_pool = var.float_pool
+  ssh_path = var.ssh_path
 }

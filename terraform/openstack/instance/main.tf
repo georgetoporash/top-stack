@@ -1,4 +1,3 @@
-
 # Define Required Rroviders
 terraform {
 required_version = ">= 0.14.0"
@@ -19,6 +18,8 @@ variable "flavor_id" {}
 variable "key_pair" {}
 variable "security_groups" {}
 variable "network_name" {}
+variable "float_pool" {}
+variable "ssh_path" {}
 
 # Create VM k8s master
 resource "openstack_compute_instance_v2" "vm1" {
@@ -44,4 +45,32 @@ resource "openstack_compute_instance_v2" "vm2" {
   network {
     name = var.network_name
   }
+}
+
+resource "openstack_networking_floatingip_v2" "fip_1" {
+  pool = var.float_pool
+}
+
+resource "openstack_compute_floatingip_associate_v2" "fip_1" {
+  floating_ip = openstack_networking_floatingip_v2.fip_1.address
+  instance_id = openstack_compute_instance_v2.vm1.id
+}
+
+
+resource "null_resource" "exec_provisioner" {
+
+  connection {
+    type        = "ssh"
+    user        = "ubuntu"
+    private_key = file(var.ssh_path)
+    host        = openstack_networking_floatingip_v2.fip_1.address
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "touch /home/ubuntu/hostname",
+      "hostname"
+    ]
+  }
+  depends_on = [openstack_compute_instance_v2.vm1]
 }
